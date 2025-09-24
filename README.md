@@ -35,14 +35,21 @@ Una aplicación fullstack para un juego de supervivencia basado en predicciones 
 
 #### **🐳 Con Docker (Recomendado):**
 ```bash
-# 1. Levantar servicios backend
-docker-compose -f backend/docker-compose.dev.yml up -d
+# 1. Clonar el repositorio
+git clone <tu-repositorio>
+cd survivor
 
-# 2. Instalar dependencias mobile
+# 2. Construir y levantar servicios backend (MongoDB + Backend)
+docker-compose -f backend/docker-compose.dev.yml up -d --build
+
+# 3. Esperar a que se complete el seeding (30-60 segundos)
+# Ver logs: docker-compose -f backend/docker-compose.dev.yml logs -f backend
+
+# 4. Instalar dependencias mobile
 cd mobile
 flutter pub get
 
-# 3. Ejecutar app móvil
+# 5. Ejecutar app móvil
 flutter run
 ```
 
@@ -50,13 +57,67 @@ flutter run
 
 #### **Backend (Docker):**
 ```bash
+# Construir y levantar servicios
+docker-compose -f backend/docker-compose.dev.yml up -d --build
+
+# Solo levantar servicios (si ya están construidos)
 docker-compose -f backend/docker-compose.dev.yml up -d
+
+# Ver logs en tiempo real
+docker-compose -f backend/docker-compose.dev.yml logs -f backend
+
+# Reiniciar solo el backend
+docker-compose -f backend/docker-compose.dev.yml restart backend
+
+# Parar servicios
+docker-compose -f backend/docker-compose.dev.yml down
 ```
 
 #### **Frontend (Flutter):**
 ```bash
 cd mobile
+
+# Instalar dependencias
+flutter pub get
+
+# Ejecutar en modo debug
 flutter run
+
+# Ejecutar en modo release
+flutter run --release
+
+# Limpiar y reinstalar
+flutter clean
+flutter pub get
+```
+
+### **🔄 Comandos Útiles**
+
+#### **Base de Datos:**
+```bash
+# Ver logs de MongoDB
+docker-compose -f backend/docker-compose.dev.yml logs mongo
+
+# Acceder a MongoDB Express (Web UI)
+# Abrir: http://localhost:8081
+
+# Reiniciar solo MongoDB
+docker-compose -f backend/docker-compose.dev.yml restart mongo
+```
+
+#### **Desarrollo:**
+```bash
+# Ver estado de contenedores
+docker-compose -f backend/docker-compose.dev.yml ps
+
+# Construir solo el backend
+docker-compose -f backend/docker-compose.dev.yml build backend
+
+# Construir y levantar todo
+docker-compose -f backend/docker-compose.dev.yml up -d --build
+
+# Ver logs de todos los servicios
+docker-compose -f backend/docker-compose.dev.yml logs
 ```
 
 ### **📝 Configuración de Entorno**
@@ -69,6 +130,79 @@ NODE_ENV=development
 JWT_SECRET=your-super-secret-jwt-key-here
 FRONTEND_URL=http://localhost:3000
 ```
+
+### **🔧 Troubleshooting**
+
+#### **Problemas Comunes:**
+
+**❌ Error: "Port already in use"**
+```bash
+# Verificar qué está usando el puerto
+netstat -ano | findstr :4300
+# O en Linux/Mac:
+lsof -i :4300
+
+# Parar servicios Docker
+docker-compose -f backend/docker-compose.dev.yml down
+```
+
+**❌ Error: "MongoDB connection failed"**
+```bash
+# Verificar que MongoDB esté corriendo
+docker-compose -f backend/docker-compose.dev.yml ps
+
+# Reiniciar MongoDB
+docker-compose -f backend/docker-compose.dev.yml restart mongo
+```
+
+**❌ Error: "Flutter dependencies not found"**
+```bash
+cd mobile
+flutter clean
+flutter pub get
+```
+
+**❌ Error: "Backend not responding"**
+```bash
+# Ver logs del backend
+docker-compose -f backend/docker-compose.dev.yml logs backend
+
+# Reiniciar backend
+docker-compose -f backend/docker-compose.dev.yml restart backend
+```
+
+#### **Reset Completo:**
+```bash
+# Parar todos los servicios
+docker-compose -f backend/docker-compose.dev.yml down
+
+# Eliminar volúmenes (CUIDADO: borra la base de datos)
+docker-compose -f backend/docker-compose.dev.yml down -v
+
+# Reconstruir y levantar
+docker-compose -f backend/docker-compose.dev.yml up -d --build
+```
+
+### **🌐 URLs y Puertos**
+
+| Servicio | URL | Puerto | Descripción |
+|----------|-----|--------|-------------|
+| **Backend API** | http://localhost:4300 | 4300 | API REST del juego |
+| **MongoDB** | mongodb://localhost:27018 | 27018 | Base de datos |
+| **MongoDB Express** | http://localhost:8081 | 8081 | Interfaz web de MongoDB |
+| **Flutter App** | - | - | App móvil (debug/release) |
+
+### **📱 Usuarios de Prueba**
+
+El sistema se inicializa automáticamente con estos usuarios:
+
+| Correo Electrónico | Contraseña | Vidas | Descripción |
+|-------------------|------------|-------|-------------|
+| `messi10@test.com` | `123456` | 1 | Usuario con 1 vida para testing |
+| `ronaldo7@test.com` | `123456` | 3 | Usuario estándar |
+| `neymar11@test.com` | `123456` | 3 | Usuario estándar |
+| `mbappe9@test.com` | `123456` | 3 | Usuario estándar |
+| `admin@test.com` | `admin123` | 3 | Administrador |
 
 ## 📁 Estructura del Proyecto
 
