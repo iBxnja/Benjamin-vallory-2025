@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4300:4300"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/survivor
+      - JWT_SECRET=dev-super-secret-jwt-key-here
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - survivor-network
+    restart: unless-stopped
+
+  # MongoDB Database
+  mongo:
+    image: mongo:7.0-jammy
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=survivor
+    networks:
+      - survivor-network
+    restart: unless-stopped
+
+  # MongoDB Admin Interface (sin autenticación)
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH=false
+    depends_on:
+      - mongo
+    networks:
+      - survivor-network
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+
+networks:
+  survivor-network:
+    driver: bridge
